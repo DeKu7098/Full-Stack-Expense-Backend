@@ -1,8 +1,17 @@
 const Users = require("../model/user.js");
 const bcrypt = require("bcrypt");
 const jwt = require('jsonwebtoken');
+const sequelize = require('../db/connect.js');
+
+
+function generateAccessToken(id) {
+  return jwt.sign({userId: id}, process.env.TOKEN);
+}
+
+
 
 exports.addUser = async (req, res, next) => {
+  const t = await sequelize.transaction();
   try {
     let { name, email, password } = req.body;
     const search = await Users.findOne({ where: { email: email } });
@@ -20,19 +29,20 @@ exports.addUser = async (req, res, next) => {
             name: name,
             email: email,
             password: password,
-          });
+            total_exp: 0
+          },
+          { transaction: t }
+          );
+          await t.commit();
           res.status(201).json({ message: "updated" });
         }
       });
     }
   } catch (err) {
+    await t.rollback();
     res.status(500).json({ message: "Something went wrong" });
   }
 };
-
-function generateAccessToken(id) {
-  return jwt.sign({userId: id}, 'secretKey');
-}
 
 
 exports.logIn = async (req, res, next) => {
