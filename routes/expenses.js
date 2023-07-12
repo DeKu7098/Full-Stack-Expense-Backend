@@ -4,7 +4,7 @@ const userAuthentication = require('../middleware/authorization');
 
 const router = express.Router();
 
-router.get('/expense/get-expenses', userAuthentication.authenticate, expenses.getExpenses);
+router.get('/expense/get-expenses/:page/:limit', userAuthentication.authenticate, expenses.getExpenses);
 router.post('/expense/add-expenses', userAuthentication.authenticate, expenses.postExpenses);
 router.delete('/expense/delete-expense/:id', userAuthentication.authenticate, expenses.deleteExpense);
 
