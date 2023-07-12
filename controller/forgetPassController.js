@@ -1,10 +1,18 @@
 const User = require("../model/user");
+
 const sequelize = require("../db/connect.js");
+
 const Sib = require("sib-api-v3-sdk");
+
 const Password = require('../model/password');
+
 const { v4: uuidv4 } = require("uuid");
+
 const path = require('path');
+
 const bcrypt = require("bcrypt");
+
+
 
 exports.generateLink = async (req, res, next) => {
     

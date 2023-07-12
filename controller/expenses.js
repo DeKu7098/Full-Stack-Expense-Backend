@@ -33,32 +33,7 @@ exports.postExpenses = async function (req, res, next) {
   }
 };
 
-// exports.deleteExpense = async function (req, res, next) {
-//   try {
-//     const expenseId = req.params.id;
 
-//     Expenses.destroy({ where: { id: expenseId, userId: req.user.id } })
-//       .then((noOfRows) => {
-//         if (noOfRows === 0) {
-//           return res
-//             .status(404)
-//             .json({
-//               success: false,
-//               message: "Expense does not belong to user",
-//             });
-//         }
-//         return res
-//           .status(204)
-//           .json({ success: true, message: "Deleted Successfully" });
-//       })
-//       .catch((err) => {
-//         console.log(err);
-//         return res.status(403).json({ success: true, message: "Failed" });
-//       });
-//   } catch (err) {
-//     console.log(err);
-//   }
-// };
 
 exports.deleteExpense = async function (req, res, next) {
     const t = await sequelize.transaction();
