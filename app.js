@@ -1,9 +1,11 @@
 const express = require("express");
+const helmet = require('helmet');
+const compression = require('compression');
 const app = express();
 require('dotenv').config();
 const sequelize = require("./db/connect");
 const bodyParser = require("body-parser");
-const cors = require('cors')
+const cors = require('cors');
 
 const User = require('./model/user');
 const Expenses = require('./model/expenses');
@@ -17,7 +19,8 @@ const purchaseRoutes = require('./routes/purchase');
 const premiumRoutes = require('./routes/premiumFeature');
 const passwordRoutes = require('./routes/forgetPass');
 
-
+app.use(helmet());
+app.use(compression());
 app.use(cors());
 // app.use(express.json());
 app.use(bodyParser.json());
@@ -43,7 +46,7 @@ Reports.belongsTo(User);
 
 
 sequelize.sync().then(() => {
-	app.listen(3000);
+	app.listen(process.env.PORT || 3000);
 }
 ).catch((err) => {
 	console.log(err);
