@@ -1,8 +1,6 @@
 const User = require("../model/user");
-const Expense = require("../model/expenses");
-const sequelize = require("../db/connect");
 const AWS = require('aws-sdk');
-const GENERATEDREPORTS = require('../model/generatedReports');
+const GeneratedReports = require('../model/generatedReports');
 
 const getUserLeaderBoard = async (req, res, next) => {
   try {
@@ -17,22 +15,19 @@ const getUserLeaderBoard = async (req, res, next) => {
 };
 
 async function downloadrep(req, res) {
-  const t = await sequelize.transaction();
   try {
     const exp = await req.user.getExpenses();
     const stringexp = JSON.stringify(exp);
     const userId = req.user.id;
     const filename = "Expense" + userId + "/" + new Date() + ".txt";
     const fileURl = await uploadToS3(stringexp, filename);
-    await GENERATEDREPORTS.create({
+    await GeneratedReports.create({
       userId: userId,
       url: fileURl,
       filename: filename,
-    },{transaction:t});
-    await t.commit()
+    });
     res.status(200).json({ fileURl, exp, success: true });  
   } catch {
-    await t.rollback()
     res.status(500).json({ message: "Something went wrong " });
   }
 }
@@ -60,7 +55,7 @@ async function uploadToS3(data, filename) {
 
 async function downgenerep(req, res) {
   try {
-    const search = await GENERATEDREPORTS.findAll(
+    const search = await GeneratedReports.findAll(
       { where: { userId: req.user.id },order: [["id", "DESC"]] }
     );
     res.status(200).json({ search, message: "list is here" });

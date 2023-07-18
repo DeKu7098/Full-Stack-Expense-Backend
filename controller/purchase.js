@@ -5,7 +5,7 @@ const sequelize = require("../db/connect.js");
 const purchasepremium = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
-    console.log(process.env.RAZORPAY_KEY_ID);
+    // console.log(process.env.RAZORPAY_KEY_ID); 
     var rzp = new Razorpay({
       key_id: process.env.RAZORPAY_KEY_ID,
       key_secret: process.env.RAZORPAY_KEY_SECRET,

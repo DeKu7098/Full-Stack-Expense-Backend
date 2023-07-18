@@ -5,10 +5,10 @@ const sequelize = require("../db/connect.js");
 exports.getExpenses = async function (req, res, next) {
   try {
     var page = req.params.page;
-    page = page / 1;
+    page = page / 1; 
     var limit = req.params.limit || 5;
     limit = limit / 1;
-    const noofExp = await Expenses.count({where: {userId: req.user.id}});
+    const noofExp = await Expenses.count({where: {userId: req.user.id}}); 
     const expenses = await Expenses.findAll({
       where: { userId: req.user.id },
       offset: (page - 1) * limit,
