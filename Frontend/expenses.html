@@ -1,0 +1,473 @@
+<body>
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Expense</title>
+      <link rel="stylesheet" href="expenses.css" />
+      <script src="https://cdn.jsdelivr.net/npm/axios@1.1.2/dist/axios.min.js"></script>
+      <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    </head>
+
+    <body>
+      <form id="addForm">
+        <div class="login-box">
+          <div class="login-header">
+            <header>Add All Your Expenses Here.</header>
+          </div>
+          <div class="input-box">
+            <input
+              type="number"
+              class="input-field"
+              placeholder="Enter Your Expense Amount."
+              autocomplete="off"
+              required
+              id="amt"
+            />
+          </div>
+          <div class="input-box">
+            <input
+              type="text"
+              class="input-field"
+              placeholder="Enter Your Product Description."
+              autocomplete="off"
+              required
+              id="desc"
+            />
+          </div>
+          <div class="input-box">
+            <select id="catg" class="input-field" required>
+              <option value="">Select</option>
+              <option value="Fuel">Fuel</option>
+              <option value="Food">Food</option>
+              <option value="Movie">Movie</option>
+              <option value="Grocery">Grocery</option>
+              <option value="Electricity">Electricity</option>
+              <option value="Electricals">Electricals</option>
+              <option value="Others.">Others.</option>
+            </select>
+          </div>
+          <div class="input-submit">
+            <input type="submit" class="submit-btn" id="submit" />
+            <label for="submit"></label>
+          </div>
+        </div>
+      </form>
+      <div id="buydiv"></div>
+      <!-- <button id="rzp-button1">Buy Premium</button> -->
+      <div class="login-header">
+        <header id="exp"></header>
+      </div>
+
+      <div class="input-box limit">
+        <select id="limit" class="input-field" onchange="setlimit()">
+          <option value="5">Default: 5</option>
+          <option value="7">7</option>
+          <option value="9">9</option>
+          <option value="13">13</option>
+          <option value="17">17</option>
+          <option value="20">20</option>
+        </select>
+      </div>
+      <table class="styled-table" id="styled-table">
+        <!-- <thead>
+      <tr>
+        <th>Sl.no</th>
+        <th>Amount</th>
+        <th>Description</th>
+        <th>Food</th>
+        <th>Delete</th>
+      </tr>
+    </thead> -->
+        <tbody class="boxx" id="boxx">
+          <!-- <tr>
+        <td>Dom</td>
+        <td>6000</td>
+        <td>6000</td>
+        <td><input type="button" value="Delete" class="delete-btn"></td>
+      </tr>
+      <tr class="active-row">
+        <td>Melissa</td>
+        <td>5150</td>
+        <td>6000</td>
+      </tr> -->
+        </tbody>
+      </table>
+      <div class="pagination"></div>
+      <div class="login-header">
+        <header id="leadhead"></header>
+      </div>
+
+      <table class="styled-table" id="styled-table2">
+        <!-- <thead>
+         <tr>
+           <th>Sl.no</th>
+           <th>Amount</th>
+           <th>Description</th>
+           <th>Food</th>
+           <th>Delete</th>
+         </tr>
+       </thead> -->
+        <tbody class="boxx" id="boxx2">
+          <!-- <tr>
+           <td>Dom</td>
+           <td>6000</td>
+           <td>6000</td>
+           <td><input type="button" value="Delete" class="delete-btn"></td>
+         </tr>
+         <tr class="active-row">
+           <td>Melissa</td>
+           <td>5150</td>
+           <td>6000</td>
+         </tr> -->
+        </tbody>
+      </table>
+    </body>
+    <script>
+      if (localStorage.getItem("limit") !== null) {
+      } else {
+        localStorage.setItem("limit", 5);
+      }
+      var page = 1;
+      var box = document.querySelector("#boxx");
+      var box2 = document.querySelector("#boxx2");
+      var thead = document.createElement("thead");
+      var thead2 = document.createElement("thead");
+      var expdet = document.getElementById("exp");
+      var tablee = document.querySelector("#styled-table");
+      var leadheadhead = document.getElementById("leadhead");
+      var tableee = document.querySelector("#styled-table2");
+
+      const boax = document.getElementById("buydiv");
+      document.getElementById("addForm").addEventListener("submit", addExpense);
+
+      window.addEventListener("DOMContentLoaded", () => {
+        pageLoader();
+      });
+
+      async function pageLoader() {
+        const token = localStorage.getItem("token");
+        const limit = localStorage.getItem("limit");
+        const data = await axios.get(
+          `http://localhost:3000/expense/get-expenses/${page}/${limit}`,
+          { headers: { Authorization: token } }
+        );
+        // console.log(data.data);
+        // console.log(data)
+        // console.log(data.data.user.ispremiumuser);
+        const res = data.data.expenses;
+        // console.log(data);
+        //
+        const user = data.data.user.ispremiumuser;
+        const pagination = data.data.pagination.lastpage;
+        const existingMessage = document.getElementById("premium_message");
+        if (existingMessage) {
+          existingMessage.remove();
+        }
+        if (user === false) {
+          // Check if the button already exists
+          if (!document.getElementById("buy_premium")) {
+            const butt = document.createElement("button");
+            butt.id = "buy_premium";
+            butt.innerHTML = "Buy Premium";
+            butt.className = "buypre-btn";
+            boax.appendChild(butt);
+            document
+              .getElementById("buy_premium")
+              .addEventListener("click", buyPremium);
+          }
+        } else {
+          // Remove the button if it exists
+          const existingButton = document.getElementById("buy_premium");
+          if (existingButton) {
+            existingButton.remove();
+          }
+
+          const existingLeaderButton = document.getElementById("show_leader");
+          if (!existingLeaderButton) {
+            const butt = document.createElement("h2");
+            butt.id = "premium_message";
+            butt.innerHTML = "You are a premium user";
+            butt.style.color = "green";
+            const butt2 = document.createElement("button");
+            butt2.id = "show_leader";
+            butt2.innerHTML = "Show leaderboard";
+            butt2.className = "buypre-btn";
+            boax.appendChild(butt);
+            boax.appendChild(butt2);
+            document
+              .getElementById("show_leader")
+              .addEventListener("click", showLeaderBoard);
+            const butt4 = document.createElement("button");
+            butt4.id = "butt3";
+            butt4.innerHTML = "Generate Report";
+            butt4.className = "buypre-btn";
+            boax.appendChild(butt4);
+            document
+              .getElementById("butt3")
+              .addEventListener("click", downloadrep);
+
+            const butt3 = document.createElement("button");
+            butt3.id = "butt4";
+            butt3.innerHTML = "Past Report";
+            butt3.className = "buypre-btn";
+            boax.appendChild(butt3);
+            document
+              .getElementById("butt4")
+              .addEventListener("click", pastreports);
+          }
+        }
+        //
+        var count = 0;
+        for (let i = 0; i < res.length; i++) {
+          count++;
+          if (count == 1) {
+            expdet.innerHTML = "Here is all your expenses";
+            var tr0 = document.createElement("tr");
+            var th0 = document.createElement("th");
+            th0.innerHTML = "Srl.no";
+            var th1 = document.createElement("th");
+            th1.innerHTML = "Amount";
+            var th2 = document.createElement("th");
+            th2.innerHTML = "Description";
+            var th3 = document.createElement("th");
+            th3.innerHTML = "Category";
+            var th4 = document.createElement("th");
+            th4.innerHTML = "Delete";
+            thead.className = "thead";
+            tablee.appendChild(thead);
+            thead.appendChild(tr0);
+            tr0.appendChild(th0);
+            tr0.appendChild(th1);
+            tr0.appendChild(th2);
+            tr0.appendChild(th3);
+            tr0.appendChild(th4);
+          }
+          var tr = document.createElement("tr");
+          var td0 = document.createElement("td");
+          var td1 = document.createElement("td");
+          var td2 = document.createElement("td");
+          var td3 = document.createElement("td");
+          var delbtn = document.createElement("input");
+          var idstore = document.createElement("input");
+          delbtn.type = "button";
+          delbtn.value = "Delete";
+          delbtn.className = "delete-btn";
+          idstore.value = res[i].id;
+          idstore.type = "hidden";
+         if(page == 1){
+            td0.innerHTML = count;
+            console.log('second')
+          }else {
+            td0.innerHTML = count + ((page - 1) * limit);
+            console.log('first')
+          }
+          td1.innerHTML = res[i].expense;
+          //   console.log(td1.innerHTML)
+          td2.innerHTML = res[i].desc;
+          td3.innerHTML = res[i].catg;
+          if (count % 2 == 0) {
+            tr.className = "active-row";
+          }
+          box.appendChild(tr);
+          tr.appendChild(idstore);
+          tr.appendChild(td0);
+          tr.appendChild(td1);
+          tr.appendChild(td2);
+          tr.appendChild(td3);
+          tr.appendChild(delbtn);
+          delbtn.addEventListener("click", del);
+        }
+        paginationFunc(pagination);
+      }
+
+      async function paginationFunc(page) {
+        if (page == 1) {
+        } else {
+          for (var i = 1; i <= page; i++) {
+            const pagination1 = document.querySelector(".pagination");
+            const but = document.createElement("button");
+            but.innerHTML = i;
+            but.className = "pagibutt";
+            but.value = i;
+    
+            pagination1.appendChild(but);
+            but.addEventListener("click", nextPage);
+          }
+        }
+      }
+
+      async function nextPage(e) {
+        const pagination1 = document.querySelector(".pagination");
+        
+        expdet.innerHTML = "";
+        thead.innerHTML = "";
+        box.innerHTML = "";
+          
+        while (pagination1.firstChild) {
+          pagination1.removeChild(pagination1.firstChild);
+        }
+         page = parseInt(e.target.value);
+         await pageLoader();
+        
+      }
+
+      async function addExpense(e) {
+        e.preventDefault();
+        let token = localStorage.getItem("token");
+        let expense = document.getElementById("amt").value;
+        let desc = document.getElementById("desc").value;
+        let catg = document.getElementById("catg").value;
+        let pagination = document.querySelector('.pagination')
+
+        // console.log(expense)
+
+        const conFig = {
+          method: "POST",
+          url: "http://localhost:3000/expense/add-expenses",
+          data: {
+            expense: expense,
+            desc: desc,
+            catg: catg,
+          },
+          headers: { Authorization: token },
+        };
+        await axios(conFig)
+          .then(() => {
+            console.log("added");
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+        // console.log(conFig);
+        expdet.innerHTML = "";
+        thead.innerHTML = "";
+        box.innerHTML = "";
+        pagination.innerHTML = "";
+        document.getElementById("amt").value = "";
+        document.getElementById("desc").value = "";
+        document.getElementById("catg").value = "";
+
+        await pageLoader();
+      }
+
+      async function del(e) {
+        let token = localStorage.getItem("token");
+        let par = e.target.parentElement;
+        let fc = par.firstChild;
+        let id = fc.value;
+        const d = await axios.delete(
+          `http://localhost:3000/expense/delete-expense/${id}`,
+          { headers: { Authorization: token } }
+        );
+        expdet.innerHTML = "";
+        thead.innerHTML = "";
+        box.innerHTML = "";
+        await pageLoader();
+      }
+
+      async function buyPremium() {
+        const token = localStorage.getItem("token");
+        const response = await axios.get(
+          "http://localhost:3000/purchase/premiummembership",
+          { headers: { Authorization: token } }
+        );
+
+        var options = {
+          key: response.data.key_id,
+          order_id: response.data.order.id,
+          handler: async function (response) {
+            await axios.post(
+              "http://localhost:3000/purchase/updatetransactionstatus",
+              {
+                order_id: options.order_id,
+                payment_id: response.razorpay_payement_id,
+              },
+              { headers: { Authorization: token } }
+            );
+
+            alert("You are a premium user now");
+            expdet.innerHTML = "";
+            thead.innerHTML = "";
+            box.innerHTML = "";
+            await pageLoader();
+          },
+        };
+        const rzp1 = new Razorpay(options);
+        rzp1.open();
+        rzp1.on("payemnt.failed", function (response) {
+          console.log(response);
+          alert("Something went wrong");
+        });
+        //  await pageLoader();
+      }
+
+      async function showLeaderBoard() {
+        const token = localStorage.getItem("token");
+        const data = await axios.get(
+          "http://localhost:3000/premium/showleaderboard",
+          { headers: { Authorization: token } }
+        );
+        // console.log(data)
+        var count = 0;
+        var show_leader1 = document.getElementById("show_leader");
+        if (show_leader1.innerHTML == "Hide Leaderboard") {
+          show_leader1.innerHTML = "Show Leaderboard";
+          leadheadhead.innerHTML = "";
+          thead2.innerHTML = "";
+          box2.innerHTML = "";
+          return;
+        }
+        data.data.user.forEach((element) => {
+          count++;
+          if (count == 1) {
+            leadheadhead.innerHTML = "Here is the Leaderboard";
+            var tr0 = document.createElement("tr");
+            var th0 = document.createElement("th");
+            th0.innerHTML = "Srl.no";
+            var th1 = document.createElement("th");
+            th1.innerHTML = "Name";
+            var th2 = document.createElement("th");
+            th2.innerHTML = "Total Expenses";
+            tableee.appendChild(thead2);
+            thead2.appendChild(tr0);
+            tr0.appendChild(th0);
+            tr0.appendChild(th1);
+            tr0.appendChild(th2);
+          }
+          var tr = document.createElement("tr");
+          var td0 = document.createElement("td");
+          var td1 = document.createElement("td");
+          var td2 = document.createElement("td");
+          td0.innerHTML = count;
+          
+          td1.innerHTML = element.name;
+          td2.innerHTML = element.total_exp;
+          if (count % 2 == 0) {
+            tr.className = "active-row";
+          }
+          box2.appendChild(tr);
+          tr.appendChild(td0);
+          tr.appendChild(td1);
+          tr.appendChild(td2);
+          show_leader1.innerHTML = "Hide Leaderboard";
+        });
+      }
+
+      async function downloadrep() {
+        window.location.href = "./downloadreports.html";
+      }
+
+      async function pastreports() {
+        window.location.href = "./pastreports.html";
+      }
+
+      function setlimit() {
+        var limits = document.getElementById("limit");
+        localStorage.setItem("limit", limits.value);
+      }
+    </script>
+  </html>
+</body>
