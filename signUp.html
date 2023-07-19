@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Signup</title>
+    <link rel="stylesheet" href="signUp.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body>
+       <div class="outer-box">
+        <div class="inner-box">
+            <header class="signup-header">
+                <h1>Signup</h1>
+                <p>It just takes 30 seconds to sign up</p>
+            </header>
+            <main class="signup-body">
+                <form id="form">
+                    <p>
+                        <label for="fullname">Full Name</label>
+                        <input id="name" type="text" id="fullname" placeholder="Name" required>
+                    </p>
+                    <p>
+                        <label for="email">Email</label>
+                        <input id="email" type="email" id="email" placeholder="Email" required>
+                    </p>
+                    <p>
+                        <label for="fullname">Password</label>
+                        <input id="pass" type="password" id="password" placeholder="At least 6 characters " required>
+                    </p>
+                    <p id="emailread"></p>
+                    <p>
+                        <input type="submit" id="submit" value="Create Account">
+                    </p>
+                </form>
+            </main>
+            <footer class="signup-footer">
+               <p>Already have an Account? Awesome &nbsp; <a href="./signIn.html">Login</a></p>
+            </footer>
+        </div>
+        <div class="circle c1"></div>
+        <div class="circle c2"></div>
+       </div>
+</body>
+<script>
+    
+      document.getElementById('form').addEventListener('submit', addUser);
+      async function addUser(e) {
+        e.preventDefault();
+        let name = document.getElementById('name').value;
+        let email = document.getElementById('email').value;
+        let password = document.getElementById('pass').value;
+
+        const conFig = await {
+        url: "http://16.171.181.147:3000/user/signUp",
+        method: "POST",
+        data: {
+            'name': name,
+            'email': email,
+            'password': password
+        }
+      }
+
+      await axios(conFig).then(data => {
+        console.log(data, 'hi');
+        if(data.status == 201){
+            let emailReady = document.getElementById('emailread');
+            emailReady.innerHTML = 'Account created successfully';
+            emailReady.style.color = 'green';
+            console.log("updated");
+        }
+      }).catch(err => {
+        let emailReady = document.getElementById('emailread');
+        emailReady.innerHTML = "Email Already Exists!";
+        emailReady.style.color = 'red';
+        console.log("Email already registered");
+      })
+ }
+
+      
+</script>
+</html>
