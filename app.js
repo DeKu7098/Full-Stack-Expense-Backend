@@ -1,7 +1,5 @@
 const express = require("express");
-const helmet = require('helmet');
 const path = require('path');
-const compression = require('compression');
 const app = express();
 require('dotenv').config();
 const sequelize = require("./db/connect");
@@ -20,11 +18,11 @@ const purchaseRoutes = require('./routes/purchase');
 const premiumRoutes = require('./routes/premiumFeature');
 const passwordRoutes = require('./routes/forgetPass');
 
-app.use(helmet());
-app.use(compression());
+
 app.use(cors());
 // app.use(express.json());
 app.use(bodyParser.json());
+app.use(express.static(path.join(__dirname,"public")));
 
 app.use(userRoutes);
 app.use(expenseRoutes);
@@ -34,6 +32,7 @@ app.use(passwordRoutes);
 app.use((req,res)=>{
     res.sendFile(path.join(__dirname,"Frontend/"+req.url))
 })
+ 
 
 
 User.hasMany(Expenses);
