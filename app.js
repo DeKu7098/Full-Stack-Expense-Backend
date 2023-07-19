@@ -1,5 +1,6 @@
 const express = require("express");
 const helmet = require('helmet');
+const path = require('path');
 const compression = require('compression');
 const app = express();
 require('dotenv').config();
@@ -30,6 +31,9 @@ app.use(expenseRoutes);
 app.use(purchaseRoutes);
 app.use(premiumRoutes);
 app.use(passwordRoutes);
+app.use((req,res)=>{
+    res.sendFile(path.join(__dirname,"Frontend/"+req.url))
+})
 
 
 User.hasMany(Expenses);
